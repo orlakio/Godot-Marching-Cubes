@@ -87,9 +87,9 @@ sky_mode = 1
 
 [node name="Player" type="Node3D" parent="." node_paths=PackedStringArray("player_graphic", "camera")]
 script = ExtResource("3_wcmpl")
-speed = 25.0
+speed = 40.0
 turn_speed = 0.25
-elevation_speed = 15.0
+elevation_speed = 20.0
 roll_angle = 35.0
 player_graphic = NodePath("Player Graphic")
 camera = NodePath("../Camera3D")

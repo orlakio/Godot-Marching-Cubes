@@ -148,6 +148,30 @@ layout(set = 0, binding = 3, std430) restrict buffer LutBuffer
 }
 lut;
 
+// high continentalness = high terrain (so depending on the y, make the density bigger or smaller)
+// -1 < continentalness < 1
+// e.g.: 
+// 		-1 < continentalness < -0.4 -> if y < -10:  density=1
+//									   if -10< y < 10:  density=0.9 -> 0.5
+//									   if y > 10:  density=0
+
+
+// as seen in https://www.youtube.com/watch?v=ob3VwY4JyzE
+// float continentalness(vec3 coord, float noise)
+// {
+// 	return noise + (coord.x*coord.y)
+// }
+// // as seen in https://www.youtube.com/watch?v=ob3VwY4JyzE
+// float erosion(vec3 coord, float noise)
+// {
+
+// }
+// // as seen in https://www.youtube.com/watch?v=ob3VwY4JyzE
+// float peakAndValleys(vec3 coord, float noise)
+// {
+
+// }
+
 vec4 evaluate(vec3 coord)
 {   
 	float cellSize = 1.0 / params.numVoxelsPerAxis * params.scale;
@@ -162,7 +186,7 @@ vec4 evaluate(vec3 coord)
 	vec3 samplePos = (worldPos + noiseOffset) * params.noiseScale / params.scale;
 
 	float sum = 0;
-	float amplitude = 1;
+	float amplitude = 2;
 	float weight = 1;
 	
 	for (int i = 0; i < 6; i ++)
@@ -177,7 +201,9 @@ vec4 evaluate(vec3 coord)
 		amplitude *= 0.5;
 	}
 	float density = sum;
-	density = -(worldPos.y+100)/300 + density;
+	// squashing_factor and height_offset
+	// 
+	// density = -(worldPos.y*2+100)/300 + density;
 
 	return vec4(worldPos, density);
 }
