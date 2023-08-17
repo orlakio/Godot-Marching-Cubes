@@ -63,13 +63,9 @@ func _ready():
 	run_compute()
 	fetch_and_process_compute_data()
 	create_mesh()
-	print(array_mesh.get_aabb())
-	var chunk_bounding_box: AABB = array_mesh.get_aabb()
-#	var flooded: PackedVector3Array = _flood_fill(chunk_bounding_box.position, 1, chunk_bounding_box) 
-	remove_floating_rocks()
-#	print(flooded)
 
-#func _process(delta):
+func _process(delta):
+	pass
 #	if (waiting_for_compute && frame - last_compute_dispatch_frame >= num_waitframes_gpusync):
 #		fetch_and_process_compute_data()
 #	elif (waiting_for_meshthread && frame - last_meshthread_start_frame >= num_waitframes_meshthread):
@@ -200,15 +196,14 @@ func create_mesh():
 	waiting_for_meshthread = false
 	print("Num tris: ", num_triangles, " FPS: ", Engine.get_frames_per_second())
 	
-	if len(verts) > 0:
-		var mesh_data = []
-		mesh_data.resize(Mesh.ARRAY_MAX)
-		mesh_data[Mesh.ARRAY_VERTEX] = verts
-		mesh_data[Mesh.ARRAY_NORMAL] = normals
-		array_mesh.clear_surfaces()
-		array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_data)
-	# here assign collision shape
-	$StaticBody3D/CollisionShape3D.shape = array_mesh.create_trimesh_shape()
+	remove_floating_rocks()
+#	if len(verts) > 0:
+#		var mesh_data = []
+#		mesh_data.resize(Mesh.ARRAY_MAX)
+#		mesh_data[Mesh.ARRAY_VERTEX] = verts
+#		mesh_data[Mesh.ARRAY_NORMAL] = normals
+#		array_mesh.clear_surfaces()
+#		array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_data)
 
 # -----# TODO instead of keeping just the verts, save somewhere the edge (connection between 2 verts) #----- #
 func remove_floating_rocks():
@@ -280,60 +275,11 @@ func remove_floating_rocks():
 		mesh_data[Mesh.ARRAY_NORMAL] = normals
 		array_mesh.clear_surfaces()
 		array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_data)
+	# here assign collision shape
+	$StaticBody3D/CollisionShape3D.shape = array_mesh.create_trimesh_shape()
 
 	
 
-
-#	# iterate over the edges_count, for every edge count != 2,
-#	# check to which group the edge belongs.
-#	# at the end, all the groups that didn't have any of those edges, are the group that should be removed
-#	var not_closed_groups:Dictionary = {}
-#	for e in edges_count:
-#		if edges_count[e]!=2:
-#			# check if any group contains one of the verts
-#			for ind in range(len(vertex_groups)):
-#				if (vertex_groups[ind].has(e[0]) or vertex_groups[ind].has(e[1])):
-#					if not not_closed_groups.has(ind):
-#						# add the index to the dictionary
-#						not_closed_groups[ind]=null
-#
-#	var groups_to_remove: PackedInt32Array=[]
-#	for ind in range(len(vertex_groups)):
-#		if not not_closed_groups.has(ind):
-#			groups_to_remove.append(ind)
-#	#così ho gli indici dei gruppi da rimuovere, ma per renderlo nuovamente mesh, devo andare a rimuovere gli elmeenti 
-#	# da verts e normals e rifare come fa in create_mesh
-##	for i in range(len(vertex_groups)):
-##		print('group ', i, ' size: ', len(vertex_groups[i]))
-#
-#	# do not consider groups that do not contain multiple of 3 verts
-#	for tor in range(len(groups_to_remove)-1,-1,-1):
-#		if len(vertex_groups[tor])%3!=0:
-#			groups_to_remove.remove_at(tor)
-#
-#	var countRem = 0
-#	# remove every closed group
-#	for v in range(len(verts)-1,-1,-1):
-#		for tor in groups_to_remove:
-#			if vertex_groups[tor].has(verts[v]):
-#				countRem+=1
-#				verts.remove_at(v)
-#				normals.remove_at(v)
-#	print('toRem: ', countRem)
-#	print('len', len(verts))
-#	print(len(verts)%3==0)
-#	print('ending')
-#	if len(verts) > 0:
-#		var mesh_data = []
-#		mesh_data.resize(Mesh.ARRAY_MAX)
-#		mesh_data[Mesh.ARRAY_VERTEX] = verts
-#		mesh_data[Mesh.ARRAY_NORMAL] = normals
-#		array_mesh.clear_surfaces()
-#		array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_data)
-#	# here assign collision shape
-##	$StaticBody3D/CollisionShape3D.shape = array_mesh.create_trimesh_shape()
-#	print('maybe?')
-		
 		
 func get_edges(vert1: Vector3, vert2: Vector3, vert3: Vector3):
 	return [
@@ -343,72 +289,6 @@ func get_edges(vert1: Vector3, vert2: Vector3, vert3: Vector3):
 	]
 
 
-#func is_occupied(cell: Vector3) -> bool:
-#	return true if _units.has(cell) else false
-
-
-### ----- TODO fix because at the moment it grows indefinitely ----- ###
-### ----- TODO fix because at the moment it grows indefinitely ----- ###
-### ----- TODO fix because at the moment it grows indefinitely ----- ###
-### ----- TODO fix because at the moment it grows indefinitely ----- ###
-### ----- TODO fix because at the moment it grows indefinitely ----- ###
-### ----- TODO fix because at the moment it grows indefinitely ----- ###
-# Returns an array with all the coordinates of walkable cells based on the `max_distance`.
-func _flood_fill(cell: Vector3, max_distance: int, grid: AABB) -> Array:
-	# This is the array of connected cells the algorithm outputs.
-	# try to use a Dictionary to prevent duplicates and exploit the fact that it keeps element ordered by insertion.
-	var res_array: PackedVector3Array = []
-#	var res_array: Dictionary = {}
-	# The way we implemented the flood fill here is by using a stack. In that stack, we store every
-	# cell we want to apply the flood fill algorithm to.
-	var stack: Array[Vector3] = [cell]
-	# keep track of the cells we already checked
-	var stack_check: Dictionary = {cell:null}
-	# We loop over cells in the stack, popping one cell on every loop iteration.
-	while len(stack)>0:
-		var current: Vector3 = stack.pop_back()
-
-		# For each cell, we ensure that we can fill further.
-		#
-		# The conditions are:
-		# 1. We didn't go past the grid's limits.
-		# 2. We haven't already visited and filled this cell
-		# 3. We are within the `max_distance`, a number of cells.
-		if not grid.has_point(current):
-			continue
-		if stack_check.has(current):
-			continue
-		if res_array.has(current):
-			continue
-
-		# This is where we check for the distance between the starting `cell` and the `current` one.
-		var difference: Vector3 = (current - cell).abs()
-		var distance := int(difference.x + difference.y + difference.z)
-#		if distance > max_distance: 
-#			continue
-
-		# add current cell to check stack
-		stack_check[current] = null
-		# If we meet all the conditions, we "fill" the `current` cell. To be more accurate, we store
-		# it in our output `res_array`.
-		res_array.append(current)
-		# We then look at the `current` cell's neighbors and, if they're not occupied and we haven't
-		# visited them already, we add them to the stack for the next iteration.
-		# This mechanism keeps the loop running until we found all cells the unit can walk.
-		for direction in DIRECTIONS:
-			var coordinates: Vector3 = current + direction
-			# This is an "optimization". It does the same thing as our `if current in res_array:` above
-			# but repeating it here with the neighbors skips some instructions.
-#			if is_occupied(coordinates):
-#				continue
-			if coordinates in res_array:
-				continue
-
-			# This is where we extend the stack.
-			stack.append(coordinates)
-		print(len(stack))
-	return res_array
-	
 
 func is_closed_group(group:Dictionary):
 	for elem in group.values():
@@ -497,17 +377,19 @@ func get_params_array():
 	params.append(player.position.x)
 	params.append(player.position.y)
 	params.append(player.position.z)
-#	params.append(noise_offset.x)
-#	params.append(noise_offset.y)
-#	params.append(noise_offset.z)
-	params.append(0)
-	params.append(0)
-	params.append(0)
-	# added the splines that controls the noise variations
-	params.append($ContinentalnessSpline.curve.tessellate(4,4))
-	params.append($ErosionSpline.curve.tessellate(4,4))
-	params.append($PeakAndValleySpline.curve.tessellate(4,4))
+	params.append(noise_offset.x)
+	params.append(noise_offset.y)
+	params.append(noise_offset.z)
+	params.append(scale_spline($ContinentalnessSpline.curve.tessellate(4,4)))
+	params.append(scale_spline($ErosionSpline.curve.tessellate(4,4)))
+	params.append(scale_spline($PeakAndValleySpline.curve.tessellate(4,4)))
 	return params
+
+# rescale the spline points
+func scale_spline(spl: PackedVector2Array):
+	for i in range(len(spl)):
+		spl[i] /= 100
+	return spl
 	
 func load_lut(file_path):
 	var file = FileAccess.open(file_path, FileAccess.READ)
