@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3 uid="uid://2srs8t53beia"]
+
+[ext_resource type="Material" uid="uid://c16m6psb2fle8" path="res://Materials/TerrainMat.tres" id="1_ltl2p"]
+[ext_resource type="Script" path="res://Scripts/TerrainGenerator.gd" id="2_7n8u8"]
+
+[sub_resource type="Curve2D" id="Curve2D_8nvdu"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -100, 0, 0, 0, 0, 0, -99, -97, 0, 0, 0, 0, -94, -3, 0, 0, 0, 0, -38, -14, 0, 0, 0, 0, -16, -43, 0, 0, 0, 0, 14, -44, 0, 0, 0, 0, 21, -91, 0, 0, 0, 0, 27, -91, 0, 0, 0, 0, 56, -99, 0, 0, 0, 0, 100, -100)
+}
+point_count = 10
+
+[sub_resource type="Curve2D" id="Curve2D_iupor"]
+resource_name = "ContinentalnessSpline"
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -100, -100, 0, 0, 0, 0, -88, -71, 0, 0, 0, 0, -54, -56, 0, 0, 0, 0, -44, -68, 0, 0, 0, 0, -24, -18, 0, 0, 0, 0, 14, -18, 0, 0, 0, 0, 23, -50, 0, 0, 0, 0, 48, -52, 0, 0, 0, 0, 57, -16, 0, 0, 0, 0, 100, 0)
+}
+point_count = 10
+
+[sub_resource type="Curve2D" id="Curve2D_rnrnx"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, -100, 0, 0, 0, 0, 0, -80, -1, 0, 0, 0, 0, -71, -15, -27.92, 0, 0, 0, -29, -27, 0, 0, 0, 0, 7, -26, 0, 0, 0, -14.63, 46, -78, 0, 8.13, 0, 0, 89, -98, 0, 0, 0, 0, 100, -100)
+}
+point_count = 8
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_gu4h5"]
+
+[node name="Terrain" type="MeshInstance3D"]
+material_override = ExtResource("1_ltl2p")
+script = ExtResource("2_7n8u8")
+noise_scale = 1.0
+noise_offset = Vector3(152.543, -150, 100)
+iso_level = 1.1
+chunk_scale = 500.0
+
+[node name="ContinentalnessSpline" type="Path2D" parent="."]
+curve = SubResource("Curve2D_8nvdu")
+
+[node name="ErosionSpline" type="Path2D" parent="."]
+curve = SubResource("Curve2D_iupor")
+
+[node name="PeakAndValleySpline" type="Path2D" parent="."]
+curve = SubResource("Curve2D_rnrnx")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_gu4h5")

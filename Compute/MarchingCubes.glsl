@@ -134,6 +134,10 @@ layout(set = 0, binding = 1, std430) restrict buffer ParamsBuffer
 	float noiseOffsetX;
 	float noiseOffsetY;
 	float noiseOffsetZ;
+	// splines used to determine terrain height
+	vec2 continentalnessSpline[10];
+	vec2 erosionSpline[10];
+	vec2 peakAndValleySpline[10];
 }
 params;
 
@@ -148,31 +152,64 @@ layout(set = 0, binding = 3, std430) restrict buffer LutBuffer
 }
 lut;
 
-// high continentalness = high terrain (so depending on the y, make the density bigger or smaller)
-// -1 < continentalness < 1
-// e.g.: 
-// 		-1 < continentalness < -0.4 -> if y < -10:  density=1
-//									   if -10< y < 10:  density=0.9 -> 0.5
-//									   if y > 10:  density=0
+layout(set = 0, binding = 4, std430) restrict buffer NoisesOutputBuffer
+{
+	float data[3];
+}
+noisesOutput;
 
+// #------ Noise spline ------#
+float interpolatePoints(vec2 p1, vec2 p2, float inputX)
+{
+	float m = (p1.y-p2.y)/(p1.x-p2.x);
+	return p1.y+m*(inputX-p1.x);
+}
 
-// as seen in https://www.youtube.com/watch?v=ob3VwY4JyzE
-// float continentalness(vec3 coord, float noise)
-// {
-// 	return noise + (coord.x*coord.y)
-// }
-// // as seen in https://www.youtube.com/watch?v=ob3VwY4JyzE
-// float erosion(vec3 coord, float noise)
-// {
+// get the two point (p1,p2) of continentalnessSpline that are the closest to cont
+// interpolate between them
+float getHeightBySpline(float noise, vec2 spline[10])
+{
+	int i = 0;
+	while (i<10)
+	{
+		if (noise<spline[i].x)
+			break;
+		i++;
+	}
+	// if cont is one of the ends, just return it
+	if(i==0 || i==10){
+		return spline[i].y;
+	}
+	else{
+		return interpolatePoints(spline[i], spline[i-1], noise);
+	}
+}
 
-// }
-// // as seen in https://www.youtube.com/watch?v=ob3VwY4JyzE
-// float peakAndValleys(vec3 coord, float noise)
-// {
+// generate noise with the specified number of octaves
+float generateNoiseOctave(vec3 seed, int octaves)
+{
+	// vec3 samplePos = seed;
+	float sum = 0;
+	float amplitude = 2;
+	float weight = 1;
+	// control how many noises we are summing up
 
-// }
+	for (int i = 0; i < octaves; i ++)
+	{
+		// transform noise to be in the interval [-1,1]
+		float noise = snoise(seed) * 2 - 1;
+		noise = 1 - abs(noise);
+		noise *= noise;
+		noise *= weight;
+		weight = max(0, min(1, noise * 10));
+		sum += noise * amplitude;
+		seed *= 2;
+		amplitude *= 0.5;
+	}
+	return sum;
+}
 
-vec4 evaluate(vec3 coord)
+vec4 evaluate(vec3 coord, bool shouldOutputNoise)
 {   
 	float cellSize = 1.0 / params.numVoxelsPerAxis * params.scale;
 	float cx = int(params.posX / cellSize + 0.5 * sign(params.posX)) * cellSize;
@@ -184,27 +221,46 @@ vec4 evaluate(vec3 coord)
 	vec3 worldPos = posNorm * params.scale + centreSnapped;
 	vec3 noiseOffset = vec3(params.noiseOffsetX, params.noiseOffsetY, params.noiseOffsetZ);
 	vec3 samplePos = (worldPos + noiseOffset) * params.noiseScale / params.scale;
+	float density = generateNoiseOctave(samplePos, 6);
 
-	float sum = 0;
-	float amplitude = 2;
-	float weight = 1;
+	// #------ Continentalness, Erosion, PeakAndValley ------#
+	// Continentalness
+	// this noise should not depend on height
+	vec3 samplePosCont = (worldPos + noiseOffset*2) * params.noiseScale*0.5 / params.scale;
+	samplePosCont.y = 0;
+	float otherNoise = generateNoiseOctave(samplePosCont, 6);
+	// terrainHeight is defined by the sum of the 3 noises passed through the splines
+	float terrainHeight = getHeightBySpline(otherNoise, params.continentalnessSpline);
+	// set the output var to send the noise to the cpu (for testing purposes) 
+	if (shouldOutputNoise)
+		{noisesOutput.data[0]=otherNoise;}
+
+	// Erosion
+	samplePosCont = (worldPos + noiseOffset*3) * params.noiseScale*1.5 / params.scale;
+	samplePosCont.y = 0;
+	otherNoise = generateNoiseOctave(samplePosCont, 3);
+	terrainHeight += getHeightBySpline(otherNoise, params.erosionSpline);
+	if (shouldOutputNoise)
+		{noisesOutput.data[1]=samplePosCont.x;}
+
+	// PeakAndValley
+	samplePosCont = (worldPos + noiseOffset*7) * params.noiseScale*2 / params.scale;
+	samplePosCont.y = 0;
+	otherNoise = generateNoiseOctave(samplePosCont, 7);
+	terrainHeight += getHeightBySpline(otherNoise, params.peakAndValleySpline);
+	if (shouldOutputNoise
+		&& cx == params.posX
+		&& cy == params.posY
+		&& cz == params.posZ)
+		{noisesOutput.data[2]=otherNoise;}
+	// #------ END -- Continentalness, Erosion, PeakAndValley ------#
 	
-	for (int i = 0; i < 6; i ++)
-	{
-		float noise = snoise(samplePos) * 2 - 1;
-		noise = 1 - abs(noise);
-		noise *= noise;
-		noise *= weight;
-		weight = max(0, min(1, noise * 10));
-		sum += noise * amplitude;
-		samplePos *= 2;
-		amplitude *= 0.5;
-	}
-	float density = sum;
-	// squashing_factor and height_offset
-	// 
-	// density = -(worldPos.y*2+100)/300 + density;
-
+	// the multiplier of the worldPos is like a squashing factor, the higher it gets, the tinier the generated mesh
+	if (worldPos.y>terrainHeight)
+	{density = -(worldPos.y*0.01) +density;} //+continentalness;}
+	else
+	{density = -(worldPos.y*0.02)+0.02 + density;}
+	
 	return vec4(worldPos, density);
 }
 
@@ -223,14 +279,14 @@ void main()
 
 	// 8 corners of the current cube
 	vec4 cubeCorners[8] = {
-		evaluate(vec3(id.x + 0, id.y + 0, id.z + 0)),
-		evaluate(vec3(id.x + 1, id.y + 0, id.z + 0)),
-		evaluate(vec3(id.x + 1, id.y + 0, id.z + 1)),
-		evaluate(vec3(id.x + 0, id.y + 0, id.z + 1)),
-		evaluate(vec3(id.x + 0, id.y + 1, id.z + 0)),
-		evaluate(vec3(id.x + 1, id.y + 1, id.z + 0)),
-		evaluate(vec3(id.x + 1, id.y + 1, id.z + 1)),
-		evaluate(vec3(id.x + 0, id.y + 1, id.z + 1))
+		evaluate(vec3(id.x + 0, id.y + 0, id.z + 0), true),
+		evaluate(vec3(id.x + 1, id.y + 0, id.z + 0), false),
+		evaluate(vec3(id.x + 1, id.y + 0, id.z + 1), false),
+		evaluate(vec3(id.x + 0, id.y + 0, id.z + 1), false),
+		evaluate(vec3(id.x + 0, id.y + 1, id.z + 0), false),
+		evaluate(vec3(id.x + 1, id.y + 1, id.z + 0), false),
+		evaluate(vec3(id.x + 1, id.y + 1, id.z + 1), false),
+		evaluate(vec3(id.x + 0, id.y + 1, id.z + 1), false)
 	};
 
 	// Calculate unique index for each cube configuration.
