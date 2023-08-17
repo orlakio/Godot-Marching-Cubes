@@ -5,6 +5,8 @@ extends CharacterBody3D
 @export var acceleration:float = 5
 @export var gravity: float = 0.5
 
+# TODO mixamo to godot -> https://www.youtube.com/watch?v=a5X-M5iOmP8
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# this way the pointer is not visible

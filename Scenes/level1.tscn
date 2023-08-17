@@ -1,16 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://b6jsubcglhi0j"]
+[gd_scene load_steps=5 format=3 uid="uid://b6jsubcglhi0j"]
 
-[ext_resource type="PackedScene" uid="uid://djprc70p6ebq1" path="res://Scenes/player.tscn" id="1_1gspj"]
 [ext_resource type="Script" path="res://Scripts/level1.gd" id="1_on1yo"]
 [ext_resource type="PackedScene" uid="uid://2srs8t53beia" path="res://Scenes/terrain.tscn" id="2_uoa7w"]
+[ext_resource type="PackedScene" uid="uid://bf3awoua3q3m" path="res://Scenes/player_3rd_person.tscn" id="3_a0fki"]
+[ext_resource type="PackedScene" uid="uid://c70ydyyswff3y" path="res://Scenes/camera_gimbal.tscn" id="4_biwtj"]
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_on1yo")
-
-[node name="Player" parent="." instance=ExtResource("1_1gspj")]
 
 [node name="DirectionalLight3D4" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.843382, -1.25674e-08, -0.537314, 0.134342, 0.968239, 0.210867, 0.520249, -0.250025, 0.816596, 0, 0, 0)
 
 [node name="Terrain" parent="." node_paths=PackedStringArray("player") instance=ExtResource("2_uoa7w")]
 player = NodePath("../Player")
+
+[node name="Player" parent="." instance=ExtResource("3_a0fki")]
+
+[node name="CameraGimbal" parent="." instance=ExtResource("4_biwtj")]
+target = NodePath("../Player")

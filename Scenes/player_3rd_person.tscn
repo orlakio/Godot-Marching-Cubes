@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://bf3awoua3q3m"]
+
+[ext_resource type="Script" path="res://player_movement.gd" id="1_hnqbc"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ntrga"]
+size = Vector3(0.514441, 0.670901, 0.0640615)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c11o5"]
+
+[sub_resource type="TextMesh" id="TextMesh_euyqc"]
+material = SubResource("StandardMaterial3D_c11o5")
+text = "T"
+font_size = 100
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_hnqbc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.08, 0, 0, 0, 1.08, 0, 0, 0, 1.08, 0, -0.0298029, 0)
+shape = SubResource("BoxShape3D_ntrga")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("TextMesh_euyqc")

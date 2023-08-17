@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://c70ydyyswff3y"]
+
+[ext_resource type="Script" path="res://Scripts/CameraGimbal.gd" id="1_0kxg6"]
+[ext_resource type="Shader" path="res://Shaders/pixelation.gdshader" id="2_r2n4t"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_n04b6"]
+render_priority = 0
+shader = ExtResource("2_r2n4t")
+
+[sub_resource type="QuadMesh" id="QuadMesh_t6u7u"]
+material = SubResource("ShaderMaterial_n04b6")
+size = Vector2(2, 2)
+
+[node name="CameraGimbal" type="Node3D"]
+script = ExtResource("1_0kxg6")
+
+[node name="InnerGimbal" type="Node3D" parent="."]
+transform = Transform3D(1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, 1, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="InnerGimbal"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="InnerGimbal/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.42109e-14, -0.00154471, -0.832258)
+mesh = SubResource("QuadMesh_t6u7u")
+skeleton = NodePath("")
