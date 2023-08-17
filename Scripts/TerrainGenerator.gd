@@ -63,7 +63,16 @@ func _ready():
 	run_compute()
 	fetch_and_process_compute_data()
 	create_mesh()
-
+	print(mesh.get_aabb())
+	$"../genCenterPoint".position.x += 500
+	init_compute()
+	run_compute()
+	fetch_and_process_compute_data()
+	create_mesh()
+	print(mesh.get_aabb())
+	
+	
+	
 func _process(delta):
 	pass
 #	if (waiting_for_compute && frame - last_compute_dispatch_frame >= num_waitframes_gpusync):

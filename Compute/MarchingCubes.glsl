@@ -262,7 +262,12 @@ vec4 evaluate(vec3 coord, bool shouldOutputNoise)
 	// #------ END -- Continentalness, Erosion, PeakAndValley ------#
 	
 	// the multiplier of the worldPos is like a squashing factor, the higher it gets, the tinier the generated mesh
-	if (worldPos.y>terrainHeight)
+	// this hard limit prevent from having unclosed meshes
+	if (worldPos.y>230)
+	{
+		density = (-(worldPos.y*0.03)+density)/ 249;
+	}
+	else if (worldPos.y>terrainHeight)
 	{density = -(worldPos.y*0.01) +density;} //+continentalness;}
 	else
 	{density = -(worldPos.y*0.03) + density;}

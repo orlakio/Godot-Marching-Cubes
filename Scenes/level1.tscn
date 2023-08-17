@@ -12,9 +12,11 @@ script = ExtResource("1_on1yo")
 transform = Transform3D(0.843382, -1.25674e-08, -0.537314, 0.134342, 0.968239, 0.210867, 0.520249, -0.250025, 0.816596, 0, 0, 0)
 
 [node name="Terrain" parent="." node_paths=PackedStringArray("player") instance=ExtResource("2_uoa7w")]
-player = NodePath("../Player")
+player = NodePath("../genCenterPoint")
 
 [node name="Player" parent="." instance=ExtResource("3_a0fki")]
 
 [node name="CameraGimbal" parent="." instance=ExtResource("4_biwtj")]
 target = NodePath("../Player")
+
+[node name="genCenterPoint" type="Node3D" parent="."]
