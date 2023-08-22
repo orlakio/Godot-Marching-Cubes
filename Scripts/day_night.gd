@@ -1,8 +1,11 @@
 @tool
 extends WorldEnvironment
 
+const START_TIME_DAY: float = 0
+const END_TIME_DAY: float = 2400
 
-@export_range(0,2400,0.01) var timeOfDay: float = 1200.0
+@export var time_speed: float = 50
+@export_range(START_TIME_DAY,END_TIME_DAY,0.01) var timeOfDay: float = 1200.0
 @export_range(0.001,0.5,0.001) var sunSize: float = 0.05
 @export_range(0.001,0.5,0.001) var moonSize: float = 0.02
 var sky_shader_material: ShaderMaterial
@@ -26,7 +29,13 @@ func update_sky():
 	var light_direction: Vector3 = $SunMoon.basis.y
 	sky_shader_material.set_shader_parameter("sun_dir", light_direction)
 	
+
+# update timeOfDay using delta and time_speed, making the day cycle independent from fps
+func update_time_of_day(delta:float):
+	timeOfDay = fmod(timeOfDay+delta*time_speed, END_TIME_DAY)
+#	print(timeOfDay)
 	
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	sky_shader_material = self.environment.sky.get_material()
@@ -36,5 +45,6 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	update_time_of_day(delta)
 	update_rotation()
 	update_sky()

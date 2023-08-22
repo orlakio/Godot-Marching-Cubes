@@ -6,10 +6,10 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ox54p"]
 shader = ExtResource("1_8xiwb")
-shader_parameter/sun_pos = 0.802237
-shader_parameter/sun_dir = Vector3(0, 0.604474, 0.796625)
-shader_parameter/sun_size = 0.05
-shader_parameter/moon_size = 0.02
+shader_parameter/sun_pos = 0.53055
+shader_parameter/sun_dir = Vector3(0, 0.0611004, 0.998132)
+shader_parameter/sun_size = 0.012
+shader_parameter/moon_size = 0.005
 shader_parameter/sky_color = null
 shader_parameter/horizon_color = null
 shader_parameter/gradient = ExtResource("2_kevqr")
@@ -31,8 +31,6 @@ reflected_light_source = 2
 environment = SubResource("Environment_brsgk")
 script = ExtResource("2_mlgda")
 timeOfDay = 352.06
-sunSize = null
-moonSize = null
 
 [node name="SunMoon" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.604474, -0.796625, 0, 0.796625, 0.604474, 0, 0, 0)

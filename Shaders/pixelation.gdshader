@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode unshaded;
 
-const int pixel_size = 6; //resolution must be divisible by pixel_size
+const int pixel_size = 4; //resolution must be divisible by pixel_size
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 
 void fragment() {
