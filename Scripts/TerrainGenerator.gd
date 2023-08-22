@@ -55,6 +55,10 @@ var waiting_for_compute : bool
 var waiting_for_meshthread : bool
 var thread
 
+
+var remove_rocks_mutex
+var remove_rocks_thread
+
 func _ready():
 	array_mesh = ArrayMesh.new()
 	mesh = array_mesh
@@ -62,14 +66,14 @@ func _ready():
 	init_compute()
 	run_compute()
 	fetch_and_process_compute_data()
-	create_mesh()
+	create_mesh(true)
 	print(mesh.get_aabb())
-	$"../genCenterPoint".position.x += 500
-	init_compute()
-	run_compute()
-	fetch_and_process_compute_data()
-	create_mesh()
-	print(mesh.get_aabb())
+#	$"../genCenterPoint".position.x += 500
+#	init_compute()
+#	run_compute()
+#	fetch_and_process_compute_data()
+#	create_mesh(true)
+#	print(mesh.get_aabb())
 	
 	
 	
@@ -200,12 +204,13 @@ func process_mesh_data():
 		normals[tri_index * 3 + 1] = norm
 		normals[tri_index * 3 + 2] = norm
 	
-func create_mesh():
+func create_mesh(do_remove:bool=true):
 	thread.wait_to_finish()
 	waiting_for_meshthread = false
 	print("Num tris: ", num_triangles, " FPS: ", Engine.get_frames_per_second())
 	
-	remove_floating_rocks()
+	if do_remove:
+		remove_floating_rocks()
 #	if len(verts) > 0:
 #		var mesh_data = []
 #		mesh_data.resize(Mesh.ARRAY_MAX)
@@ -214,9 +219,8 @@ func create_mesh():
 #		array_mesh.clear_surfaces()
 #		array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, mesh_data)
 
-# -----# TODO instead of keeping just the verts, save somewhere the edge (connection between 2 verts) #----- #
+# -----# TODO make it multithread #----- #
 func remove_floating_rocks():
-	var faces: PackedVector3Array = verts
 	# array that contains a dictionary for each subset 
 	# of vertices that are not connected
 	var vertex_groups: Array[Dictionary] = []
@@ -226,21 +230,21 @@ func remove_floating_rocks():
 	# there are 3 cases:
 	var found_in_groups: PackedInt32Array = []
 	var current_index_group: int = -1
-	for i in range(0, len(faces), 3):
+	for i in range(0, len(verts), 3):
 		found_in_groups = []
 		current_index_group = -1
 		# save every group index where one of the 3 verts appears
 		for j in range(i, i+3):
-			current_index_group = get_belonging_vertex_group_index(vertex_groups, faces[j])
+			current_index_group = get_belonging_vertex_group_index(vertex_groups, verts[j])
 			if current_index_group!=-1 and not found_in_groups.has(current_index_group):
 				found_in_groups.append(current_index_group)
 				
 		# case 1. (new group)
 		if len(found_in_groups)==0:
 			vertex_groups.append({
-				faces[i]:null,
-				faces[i+1]:null,
-				faces[i+2]:null
+				verts[i]:null,
+				verts[i+1]:null,
+				verts[i+2]:null
 			})
 #			num_groups+=1
 		# case 3. (merge existing groups)
@@ -255,10 +259,10 @@ func remove_floating_rocks():
 		# case 2. (at least one vertex in existing group)
 		elif len(found_in_groups)==1:
 			for j in range(i, i+3):
-				if not vertex_groups[found_in_groups[0]].has(faces[j]):
-					vertex_groups[found_in_groups[0]][faces[j]] = null
+				if not vertex_groups[found_in_groups[0]].has(verts[j]):
+					vertex_groups[found_in_groups[0]][verts[j]] = null
 		# counts edges appereances
-#		for ed in get_edges(faces[i],faces[i+1],faces[i+2]):
+#		for ed in get_edges(verts[i],verts[i+1],verts[i+2]):
 #			edges_count[ed] = edges_count[ed]+1 if edges_count.has(ed) else 1
 	
 	# get the index of the biggest group (the one we want to keep)

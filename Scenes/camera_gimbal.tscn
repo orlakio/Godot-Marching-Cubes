@@ -20,7 +20,7 @@ transform = Transform3D(1, 0, -2.98023e-08, 0, 1, 0, 2.98023e-08, 0, 1, 0, 0, 0)
 [node name="Camera3D" type="Camera3D" parent="InnerGimbal"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="InnerGimbal/Camera3D"]
+[node name="pixelate" type="MeshInstance3D" parent="InnerGimbal/Camera3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.42109e-14, -0.00154471, -0.832258)
 mesh = SubResource("QuadMesh_t6u7u")
 skeleton = NodePath("")

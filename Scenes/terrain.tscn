@@ -48,6 +48,7 @@ curve = SubResource("Curve2D_rnrnx")
 shape = SubResource("ConcavePolygonShape3D_gu4h5")
 
 [node name="bkp" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1)
 visible = false
 
 [node name="ContinentalnessSpline_bkp" type="Path2D" parent="bkp"]
