@@ -10,8 +10,7 @@
 script = ExtResource("1_on1yo")
 
 [node name="WorldEnvironment" parent="." instance=ExtResource("2_ncr1y")]
-time_speed = 50.0
-timeOfDay = 1501.5
+timeOfDay = 1835.88
 sunSize = 0.012
 moonSize = 0.005
 
@@ -22,6 +21,7 @@ player = NodePath("../genCenterPoint")
 gravity = 0.0
 
 [node name="CameraGimbal" parent="." instance=ExtResource("4_biwtj")]
+clamp_rotation = false
 target = NodePath("../Player")
 
 [node name="genCenterPoint" type="Node3D" parent="."]

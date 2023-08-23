@@ -1,4 +1,4 @@
-@tool
+
 extends WorldEnvironment
 
 const START_TIME_DAY: float = 0
@@ -10,6 +10,7 @@ const END_TIME_DAY: float = 2400
 @export_range(0.001,0.5,0.001) var moonSize: float = 0.02
 var sky_shader_material: ShaderMaterial
 var sun_position: float
+var scattering_texture: Texture2D = preload("res://.godot/imported/precomputedScattering.png-b33540be7f220c2ff1cd3daa7ac457a7.ctex")
 
 # update sun moon rotation
 func update_rotation():
@@ -33,12 +34,12 @@ func update_sky():
 # update timeOfDay using delta and time_speed, making the day cycle independent from fps
 func update_time_of_day(delta:float):
 	timeOfDay = fmod(timeOfDay+delta*time_speed, END_TIME_DAY)
-#	print(timeOfDay)
 	
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	sky_shader_material = self.environment.sky.get_material()
+	sky_shader_material.set_shader_parameter("scattering_texture", scattering_texture)
 	update_rotation()
 	update_sky()
 

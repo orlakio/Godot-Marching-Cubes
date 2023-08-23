@@ -6,8 +6,8 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ox54p"]
 shader = ExtResource("1_8xiwb")
-shader_parameter/sun_pos = 0.53055
-shader_parameter/sun_dir = Vector3(0, 0.0611004, 0.998132)
+shader_parameter/sun_pos = 0.536174
+shader_parameter/sun_dir = Vector3(0, 0.0723488, -0.99738)
 shader_parameter/sun_size = 0.012
 shader_parameter/moon_size = 0.005
 shader_parameter/sky_color = null

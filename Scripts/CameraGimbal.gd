@@ -4,6 +4,7 @@ extends Node3D
 @export var sensitivity:float = 0.005
 @export var invert_x:bool = false
 @export var invert_y:bool = false
+@export var clamp_rotation:bool = true
 @export var do_pixelate: bool = true
 @export var target: NodePath
 
@@ -33,6 +34,7 @@ func _input(event):
 			var dir = 1 if invert_y else -1
 			var y_rotation = clamp(event.relative.y, -30, 30)
 			$InnerGimbal.rotate_x(dir * y_rotation * sensitivity)
-#			$InnerGimbal.rotation.x = clamp($InnerGimbal.rotation.x, -1, -0.01)
-			$InnerGimbal.rotation.z = 0
+			if (clamp_rotation):
+				$InnerGimbal.rotation.x = clamp($InnerGimbal.rotation.x, -1, -0.01)
+				$InnerGimbal.rotation.z = 0
 			
